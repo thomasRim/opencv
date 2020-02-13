@@ -3,21 +3,35 @@ import numpy as np
 import os
 import sys
 
+def fileExist(filePath):
+    if not os.path.isfile(filePath):
+        print("Input file ", filePath, " doesn't exist")
+        sys.exit(1)
+
+def folderExist(filePath):
+    if not os.path.isdir(filePath):
+        print("Input file ", filePath, " doesn't exist")
+        return False
+    else:
+        return True
 
 # Load Yolo
 sysPath = os.path.dirname(os.path.abspath(__file__))
 weightPath = os.path.join(sysPath, 'yolov3.weights')
 configPath = os.path.join(sysPath, 'yolov3.cfg')
+fileExist(weightPath)
+fileExist(configPath)
 
 # Net
 # net = cv.dnn.readNet(weightPath, configPath)
 net = cv.dnn.readNetFromDarknet(configPath, weightPath)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
-net.setPreferableTarget(cv.dnn.DNN_TARGET_OPENCL)
+net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
 # classes
 classes = []
 cocoNamesPath = os.path.join(sysPath, 'coco.names')
+fileExist(cocoNamesPath)
 with open(cocoNamesPath, "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
@@ -27,7 +41,7 @@ output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 # colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
 def detectFrom(img):
-    height, width, channels = img.shape 
+    height, width, channels = img.shape
 
     # Detecting objects
     blob = cv.dnn.blobFromImage(img, 0.0005, (320, 320), (0, 0, 0), True, crop=False)
@@ -72,27 +86,30 @@ def detectFrom(img):
 
 
 # Video
-sysPath = os.path.dirname(os.path.abspath(__file__))
 videoName = 'vtest.avi'
 source = os.path.join(os.path.join(sysPath, 'sources'),videoName)
-if not os.path.isfile(source):
-        print("Input file ", source, " doesn't exist")
-        sys.exit(1)
+fileExist(source)
 cap = cv.VideoCapture(source)
 
 ret, img = cap.read()
 height, width, channels = img.shape
-outSource = os.path.join(os.path.join(sysPath, 'result'),videoName)
+
+resultFolder = os.path.join(sysPath, 'result')
+if not folderExist(resultFolder):
+    os.mkdir(resultFolder)
+outSource = os.path.join(resultFolder,videoName)
 capWrite = cv.VideoWriter(outSource, int(cap.get(cv.CAP_PROP_FOURCC)), int(cap.get(cv.CAP_PROP_FPS)), (width, height) )
 
 while True:
     ret, img = cap.read()
     detectFrom(img)
 
-    cv.imshow('Video', img)
+    # cv.imshow('Video', img)
     capWrite.write(img)
     ch = cv.waitKey(1)
     if ch == 27:
         break
 
-cv.destroyAllWindows()
+capWrite.release()
+cap.release()
+# cv.destroyAllWindows()
