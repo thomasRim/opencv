@@ -33,14 +33,13 @@ class Yolo(object):
     def detectFrom(self,img):
         height, width, channels = img.shape
 
-        # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         # Detecting objects
-        blob = cv.dnn.blobFromImage(img, 0.0005, (320, 320), (0, 0, 0), True, crop=False)
+        blob = cv.dnn.blobFromImage(img, 1 / 255.0, (608, 608), (0, 0, 0), True, crop=False)
 
         self.net.setInput(blob)
         outs = self.net.forward(self.output_layers)
 
-        # Showing informations on the screen
+        ## Showing informations on the screen
         class_ids = []
         confidences = []
         boxes = []
@@ -66,6 +65,8 @@ class Yolo(object):
 
         indexes = cv.dnn.NMSBoxes(boxes, confidences, 0.1, 0.1)
         font = cv.FONT_HERSHEY_PLAIN
+
+        #draw boxes and text
         for i in range(len(boxes)):
             if i in indexes:
                 x, y, w, h = boxes[i]
@@ -73,4 +74,4 @@ class Yolo(object):
                 textColor = (0,0,187)
                 boxColor = (150,180,20)
                 cv.rectangle(img, (x, y), (x + w, y + h), boxColor, 1)
-                cv.putText(img, label, (x, y + 30), font, 1, textColor, 2)
+                cv.putText(img, label, (x, y - 5), font, 1, textColor, 2)

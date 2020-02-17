@@ -3,6 +3,7 @@ import os
 import sys
 import utils
 import yolo
+import time
 
 # Net
 yo = yolo.Yolo()
@@ -46,7 +47,13 @@ while True:
         break
     if i % 5 == 0 :
         i = 0
+
+        # show timing information on YOLO
+        start = time.time()
         yo.detectFrom(img) 
+        end = time.time()
+        print("[INFO] YOLO took {:.6f} seconds".format(end - start))
+
         cv.imshow('Video', img)
 
     if capWrite:
