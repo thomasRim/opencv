@@ -11,8 +11,8 @@ yo = yolo.Yolo()
 # Video
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
-videoName = 'vtest.avi'
-source = os.path.join(os.path.join(sysPath, 'sources'),videoName)
+videoName = 'vtest'
+source = os.path.join(os.path.join(sysPath, 'sources'),videoName+'.avi')
 if not os.path.isfile(source):
         print("Input file ", source, " doesn't exist")
         sys.exit(1)
@@ -45,7 +45,7 @@ while True:
     ret, img = cap.read()
     if not ret:
         break
-    if i % 5 == 0 :
+    if i % 5 == 0 : # each 5 frame, to fastener
         i = 0
 
         # show timing information on YOLO
