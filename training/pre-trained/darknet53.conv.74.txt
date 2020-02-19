@@ -1,0 +1,6 @@
+darknet pre trained weights split for git
+to merge, run:
+cat x* > darknet53.conv.74
+
+or download from https://pjreddie.com/media/files/darknet53.conv.74
+i.e.: wget https://pjreddie.com/media/files/darknet53.conv.74
