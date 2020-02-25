@@ -6,11 +6,15 @@ import yolo
 import time
 
 # Net
-yo = yolo.Yolo()
-
-# Video
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
+weights = os.path.join(sysPath, 'yolov3.weights')
+config = os.path.join(sysPath, 'yolov3.cfg')
+names = os.path.join(sysPath, 'coco.names')
+
+yo = yolo.Yolo(weights, config, names)
+
+# Video
 videoName = 'vtest'
 source = os.path.join(os.path.join(sysPath, 'sources'),videoName+'.avi')
 if not os.path.isfile(source):

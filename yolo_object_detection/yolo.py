@@ -7,21 +7,21 @@ import utils
 
 class Yolo(object):
     
-    def __init__(self):
+    def __init__(self, weightPath, configPath, names):
         super().__init__()
-        sysPath = os.path.dirname(os.path.abspath(__file__))
         # Load Yolo
-        self.weightPath = os.path.join(sysPath, 'yolov3.weights')
-        self.configPath = os.path.join(sysPath, 'yolov3.cfg')
+        self.weightPath = weightPath 
+        self.configPath = configPath
         if not utils.fileExist(self.weightPath) :
             sys.exit(1)
         if not utils.fileExist(self.configPath) :
             sys.exit(1)
         
         self.classes = []
-        cocoNamesPath = os.path.join(sysPath, 'coco.names')
-        utils.fileExist(cocoNamesPath)
-        with open(cocoNamesPath, "r") as f:
+        namesPath = names
+        if not utils.fileExist(namesPath) :
+            sys.exit(1)
+        with open(namesPath, "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
 
         self.net = cv.dnn.readNet(self.weightPath, self.configPath)
