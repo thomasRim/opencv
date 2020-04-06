@@ -5,21 +5,36 @@ import sys
 import utils
 
 
+class FoundObject(object):
+    def __init__(self, name="", x=0, y=0, width=0, height=0):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+
 class Yolo(object):
-    
-    def __init__(self, weightPath, configPath, names):
+
+    def __init__(self, weightPath, configPath, names, xAdd=0, yAdd=0):
         super().__init__()
+
+        self.objects = []
+
+        self.xAdd = xAdd
+        self.yAdd = yAdd
+
         # Load Yolo
-        self.weightPath = weightPath 
+        self.weightPath = weightPath
         self.configPath = configPath
-        if not utils.fileExist(self.weightPath) :
+        if not utils.fileExist(self.weightPath):
             sys.exit(1)
-        if not utils.fileExist(self.configPath) :
+        if not utils.fileExist(self.configPath):
             sys.exit(1)
-        
+
         self.classes = []
         namesPath = names
-        if not utils.fileExist(namesPath) :
+        if not utils.fileExist(namesPath):
             sys.exit(1)
         with open(namesPath, "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
@@ -27,19 +42,20 @@ class Yolo(object):
         self.net = cv.dnn.readNet(self.weightPath, self.configPath)
         # layers
         layer_names = self.net.getLayerNames()
-        self.output_layers = [layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
+        self.output_layers = [layer_names[i[0] - 1]
+                              for i in self.net.getUnconnectedOutLayers()]
 
-
-    def detectFrom(self,img):
+    def detectFrom(self, img):
         height, width, channels = img.shape
 
         # Detecting objects
-        blob = cv.dnn.blobFromImage(img, 1 / 255.0, (608, 608), (0, 0, 0), True, crop=False)
+        blob = cv.dnn.blobFromImage(
+            img, 1 / 255.0, (608, 608), (0, 0, 0), True, crop=False)
 
         self.net.setInput(blob)
         outs = self.net.forward(self.output_layers)
 
-        ## Showing informations on the screen
+        # Showing informations on the screen
         class_ids = []
         confidences = []
         boxes = []
@@ -64,14 +80,10 @@ class Yolo(object):
                     class_ids.append(class_id)
 
         indexes = cv.dnn.NMSBoxes(boxes, confidences, 0.1, 0.1)
-        font = cv.FONT_HERSHEY_PLAIN
 
-        #draw boxes and text
         for i in range(len(boxes)):
             if i in indexes:
                 x, y, w, h = boxes[i]
-                label = str(self.classes[class_ids[i]])
-                textColor = (0,0,187)
-                boxColor = (150,180,20)
-                cv.rectangle(img, (x, y), (x + w, y + h), boxColor, 1)
-                cv.putText(img, label, (x, y - 5), font, 1, textColor, 2)
+                obj = FoundObject(
+                    str(self.classes[class_ids[i]]), x+self.xAdd, y+self.yAdd, w, h)
+                self.objects.append(obj)
