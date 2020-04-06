@@ -17,7 +17,6 @@ class FoundObject(object):
 class Yolo(object):
 
     def __init__(self, weightPath, configPath, names, xAdd=0, yAdd=0):
-        super().__init__()
 
         self.objects = []
 
@@ -46,7 +45,7 @@ class Yolo(object):
                               for i in self.net.getUnconnectedOutLayers()]
 
     def detectFrom(self, img):
-        height, width, channels = img.shape
+        height, width, _ = img.shape
 
         # Detecting objects
         blob = cv.dnn.blobFromImage(
