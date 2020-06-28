@@ -1,4 +1,4 @@
-darknet pre trained weights split for git
+darknet pre trained weights split for git. YOLOv3
 to merge, run:
 cat x* > darknet53.conv.74
 

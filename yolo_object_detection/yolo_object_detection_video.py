@@ -5,21 +5,26 @@ import utils
 import yolo
 import time
 
+should_show_preview = False
+should_write_result = True
+detect_each_n_frame = 1
+
+videoName = "springs_04"
+videoExt = ".mov"
 # Net
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
-weights = os.path.join(sysPath, 'yolov3.weights')
-config = os.path.join(sysPath, 'yolov3.cfg')
-names = os.path.join(sysPath, 'coco.names')
+weights = os.path.join(sysPath, "lib/yolov3-custom.weights")
+config = os.path.join(sysPath, "lib/yolov3-custom.cfg")
+names = os.path.join(sysPath, "lib/custom.names")
 
 yo = yolo.Yolo(weights, config, names)
 
 # Video
-videoName = 'vtest'
-source = os.path.join(os.path.join(sysPath, 'sources'),videoName+'.avi')
+source = os.path.join(os.path.join(sysPath, "sources"), videoName + videoExt)
 if not os.path.isfile(source):
-        print("Input file ", source, " doesn't exist")
-        sys.exit(1)
+    print("Input file ", source, " doesn't exist")
+    sys.exit(1)
 
 # source = 'http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8?dummy=param.mjpg'
 # source = 'http://devimages.apple.com/iphone/samples/bipbop/gear1/prog_index.m3u8?dummy=param.mjpg'
@@ -29,43 +34,75 @@ if not os.path.isfile(source):
 cap = cv.VideoCapture()
 cap.open(source)
 
-#check if we succeeded
+# check if we succeeded
 if not cap.isOpened:
     sys.exit(1)
 
-capWrite = None
-
 ret, img = cap.read()
-# if ret:
-#     height, width, channels = img.shape
-#     resultFolder = os.path.join(sysPath, 'result')
-#     if not utils.folderExist(resultFolder):
-#         os.mkdir(resultFolder)
-#     outSource = os.path.join(resultFolder,videoName)
-#     capWrite = cv.VideoWriter(outSource, 0x7634706d, int(cap.get(cv.CAP_PROP_FPS)), (width, height) ) #0x7634706d - for mp4
+# prescale
+scale = 0.2
+height, width, _ = img.shape
+im_res = cv.resize(img, (int(width * scale), int(height * scale)))
+img = im_res
+
+capWrite = None
+if should_write_result:
+    resultFolder = os.path.join(sysPath, "result")
+    if not utils.folderExist(resultFolder):
+        os.mkdir(resultFolder)
+    outSource = os.path.join(resultFolder, videoName + ".mp4")
+    capWrite = cv.VideoWriter(
+        outSource, 0x7634706D, int(cap.get(cv.CAP_PROP_FPS)), (width, height)
+    )  # 0x7634706d - for mp4
 
 i = 1
 while True:
     ret, img = cap.read()
     if not ret:
         break
-    if i % 5 == 0 : # each 5 frame, to fastener
+    if i % detect_each_n_frame == 0:  # each N frame, to fastener
         i = 0
 
         # show timing information on YOLO
         start = time.time()
-        yo.detectFrom(img) 
+        yo.detectFrom(img)
         end = time.time()
         print("[INFO] YOLO took {:.6f} seconds".format(end - start))
 
-        cv.imshow('Video', img)
+        # Visualize detected on source image
+        font = cv.FONT_HERSHEY_PLAIN
+        for obj in yo.objects:
+            label = (
+                obj.name
+                + ":"
+                + str(obj.confidence)
+                + ":"
+                + str(obj.x)
+                + ", "
+                + str(obj.y)
+            )
+            textColor = (0, 0, 0)
+            boxColor = (150, 180, 20)
+            cv.rectangle(
+                img,
+                (obj.x, obj.y),
+                (obj.x + obj.width, obj.y + obj.height),
+                boxColor,
+                1,
+            )
+            cv.putText(img, label, (obj.x, obj.y - 5), font, 1, textColor, 2)
 
-    if capWrite:
+        if should_show_preview:
+            cv.imshow("Video", img)
+
+    if capWrite and should_write_result:
         capWrite.write(img)
+
     ch = cv.waitKey(1)
     if ch == 27:
         break
     i += 1
+
 
 if capWrite:
     capWrite.release()

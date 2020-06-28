@@ -6,16 +6,16 @@ import utils
 
 
 class FoundObject(object):
-    def __init__(self, name="", x=0, y=0, width=0, height=0):
+    def __init__(self, name="", x=0, y=0, width=0, height=0, confidence=0):
         self.name = name
         self.x = x
         self.y = y
         self.width = width
         self.height = height
+        self.confidence = confidence
 
 
 class Yolo(object):
-
     def __init__(self, weightPath, configPath, names, xAdd=0, yAdd=0):
 
         self.objects = []
@@ -41,15 +41,18 @@ class Yolo(object):
         self.net = cv.dnn.readNet(self.weightPath, self.configPath)
         # layers
         layer_names = self.net.getLayerNames()
-        self.output_layers = [layer_names[i[0] - 1]
-                              for i in self.net.getUnconnectedOutLayers()]
+        self.output_layers = [
+            layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()
+        ]
 
     def detectFrom(self, img):
+        self.objects = []
         height, width, _ = img.shape
 
         # Detecting objects
         blob = cv.dnn.blobFromImage(
-            img, 1 / 255.0, (608, 608), (0, 0, 0), True, crop=False)
+            img, 1 / 255.0, (608, 608), (0, 0, 0), True, crop=False
+        )
 
         self.net.setInput(blob)
         outs = self.net.forward(self.output_layers)
@@ -84,5 +87,11 @@ class Yolo(object):
             if i in indexes:
                 x, y, w, h = boxes[i]
                 obj = FoundObject(
-                    str(self.classes[class_ids[i]]), x+self.xAdd, y+self.yAdd, w, h)
+                    str(self.classes[class_ids[i]]),
+                    x + self.xAdd,
+                    y + self.yAdd,
+                    w,
+                    h,
+                    confidences[i],
+                )
                 self.objects.append(obj)
