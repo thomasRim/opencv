@@ -19,7 +19,8 @@ class Yolo(object):
     def __init__(self, weightPath, configPath, names, xAdd=0, yAdd=0):
 
         self.objects = []
-
+        self.confidence = 0.5
+        self.blobResize = 416
         self.xAdd = xAdd
         self.yAdd = yAdd
 
@@ -51,7 +52,7 @@ class Yolo(object):
 
         # Detecting objects
         blob = cv.dnn.blobFromImage(
-            img, 1 / 255.0, (608, 608), (0, 0, 0), True, crop=False
+            img, 1 / 255.0, (self.blobResize, self.blobResize), (0, 0, 0), True, crop=False
         )
 
         self.net.setInput(blob)
@@ -66,7 +67,7 @@ class Yolo(object):
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
-                if confidence > 0.5:
+                if confidence > self.confidence:
                     # Object detected
                     center_x = int(detection[0] * width)
                     center_y = int(detection[1] * height)
