@@ -13,15 +13,16 @@ from collections import deque
 
 from  common import clock, draw_str, StatValue
 import video
+from yolo import Yolo
 
 
-class DummyTask:
-    def __init__(self, data):
-        self.data = data
-    def ready(self):
-        return True
-    def get(self):
-        return self.data
+# class DummyTask:
+#     def __init__(self, data):
+#         self.data = data
+#     def ready(self):
+#         return True
+#     def get(self):
+#         return self.data
 
 def main():
     import sys
@@ -39,8 +40,8 @@ def main():
     sysPath = os.path.dirname(os.path.abspath(__file__))
 
     # Load Yolo
-    weightPath = os.path.join(sysPath, 'yolov3.weights')
-    configPath = os.path.join(sysPath, 'yolov3.cfg')
+    weightPath = os.path.join(sysPath, 'lib/yolov3-custom.weights')
+    configPath = os.path.join(sysPath, 'lib/yolov3-custom.cfg')
     fileExist(weightPath)
     fileExist(configPath)
 
@@ -52,7 +53,7 @@ def main():
 
     # classes
     classes = []
-    cocoNamesPath = os.path.join(sysPath, 'coco.names')
+    cocoNamesPath = os.path.join(sysPath, 'lib/custom.names')
     fileExist(cocoNamesPath)
     with open(cocoNamesPath, "r") as f:
         classes = [line.strip() for line in f.readlines()]
@@ -64,67 +65,23 @@ def main():
     # colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
     # Video
-    videoName = 'vtest.avi'
+    videoName = 'springs_05.MOV'
     source = os.path.join(os.path.join(sysPath, 'sources'), videoName)
     fileExist(source)
-    cap: VideoCapture = cv.VideoCapture(source)
+    cap = cv.VideoCapture(source)
 
-    def detectFrom(img):
-        height, width, channels = img.shape
-
-        # Detecting objects
-        blob = cv.dnn.blobFromImage(img, 0.0005, (320, 320), (0, 0, 0), True, crop=False)
-
-        net.setInput(blob)
-        outs = net.forward(output_layers)
-
-        # Showing informations on the screen
-        class_ids = []
-        confidences = []
-        boxes = []
-        for out in outs:
-            for detection in out:
-                scores = detection[5:]
-                class_id = np.argmax(scores)
-                confidence = scores[class_id]
-                if confidence > 0.5:
-                    # Object detected
-                    center_x = int(detection[0] * width)
-                    center_y = int(detection[1] * height)
-                    w = int(detection[2] * width)
-                    h = int(detection[3] * height)
-
-                    # Rectangle coordinates
-                    x = int(center_x - w / 2)
-                    y = int(center_y - h / 2)
-
-                    boxes.append([x, y, w, h])
-                    confidences.append(float(confidence))
-                    class_ids.append(class_id)
-
-        indexes = cv.dnn.NMSBoxes(boxes, confidences, 0.1, 0.1)
-        font = cv.FONT_HERSHEY_PLAIN
-        for i in range(len(boxes)):
-            if i in indexes:
-                x, y, w, h = boxes[i]
-                label = str(classes[class_ids[i]])
-                textColor = (0, 0, 187)
-                boxColor = (150, 180, 20)
-                cv.rectangle(img, (x, y), (x + w, y + h), boxColor, 1)
-                cv.putText(img, label, (x, y + 30), font, 1, textColor, 2)
-
+    yo = Yolo(weightPath, configPath, cocoNamesPath)
 
     def process_frame(frame, t0):
-        detectFrom(frame)
-        # some intensive computation...
-        # frame = cv.med      ianBlur(frame, 19)
+        objects = yo.detectFrom(frame)
+        print("detected:" + str(objects))
         return frame, t0
 
     threadn = cv.getNumberOfCPUs()
     pool = ThreadPool(processes = threadn)
     pending = deque()
 
-    threaded_mode = False
+    threaded_mode = True
 
     latency = StatValue()
     frame_interval = StatValue()

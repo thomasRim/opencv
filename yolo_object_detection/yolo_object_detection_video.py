@@ -6,32 +6,29 @@ import yolo
 import time
 
 should_show_preview = True
-should_write_result = True
+should_write_result = False
 detect_each_n_frame = 1
 scale = 0.6
 
-videoName = "springs_04"
+videoName = "springs_05"
 videoExt = ".mov"
 # Net
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
-weights = os.path.join(sysPath, "lib/yolov3-custom.weights")
+weights = os.path.join(sysPath, "lib/yolov3-custom_sm.weights")
 config = os.path.join(sysPath, "lib/yolov3-custom.cfg")
 names = os.path.join(sysPath, "lib/custom.names")
 
 yo = yolo.Yolo(weights, config, names)
-yo.confidence = 0.4
+yo.confidence = 0.15
+yo.blobResize = 256
+
 # Video
 source = os.path.join(os.path.join(sysPath, "sources"), videoName + videoExt)
 if not os.path.isfile(source):
     print("Input file ", source, " doesn't exist")
     sys.exit(1)
 
-# source = 'http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8?dummy=param.mjpg'
-# source = 'http://devimages.apple.com/iphone/samples/bipbop/gear1/prog_index.m3u8?dummy=param.mjpg'
-# source = 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8'
-# source = 'https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8'
-# source = 'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8'
 cap = cv.VideoCapture()
 cap.open(source)
 
@@ -60,12 +57,13 @@ while True:
     ret, img = cap.read()
     if not ret:
         break
+
+    height, width, _ = img.shape
+    img = cv.resize(img, (int(width * scale), int(height * scale)))
+
     if i % detect_each_n_frame == 0:  # each N frame, to fastener
         i = 0
 
-        height, width, _ = img.shape
-        im_res = cv.resize(img, (int(width * scale), int(height * scale)))
-        img = im_res
         # show timing information on YOLO
         start = time.time()
         yo.detectFrom(img)
@@ -95,8 +93,8 @@ while True:
             )
             cv.putText(img, label, (obj.x, obj.y - 5), font, 1, textColor, 2)
 
-        if should_show_preview:
-            cv.imshow("Video", img)
+    if should_show_preview:
+        cv.imshow("Video", img)
 
     if capWrite and should_write_result:
         capWrite.write(img)
