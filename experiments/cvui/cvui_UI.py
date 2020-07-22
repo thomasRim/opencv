@@ -8,7 +8,7 @@ WINDOW_NAME = 'Image button'
 (win_W, win_H) = (1024, 768)
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
-path = os.path.join(sysPath, "springs_04.mov")
+path = os.path.join(sysPath, "springs_04.MOV")
 
 cap = cv2.VideoCapture()
 states = {0: "Ready for Stream",
@@ -19,7 +19,7 @@ state = [states.get(0, "None")]
 recognize = [False]
 
 # YOLO
-weights = os.path.join(sysPath, "lib/yolov3-custom_sm.weights")
+weights = os.path.join(sysPath, "lib/yolov3-custom.weights")
 config = os.path.join(sysPath, "lib/yolov3-custom.cfg")
 names = os.path.join(sysPath, "lib/custom.names")
 
