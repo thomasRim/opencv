@@ -59,9 +59,13 @@ cap_fr2_x, cap_fr2_y, cap_fr2_w, cap_fr2_h = int(0.51 * win_W), int(0.04 * win_H
   stop_all_b_h) = (int(0.314 * win_W), int(0.7 * win_H), int(0.2 * win_W), int(0.25 * win_H))
 
 # trackbars
+## frame_x
 (trb_X_x, trb_X_y, trb_X_w) = (int(0.078 * win_W), int(0.586 * win_H), int(0.195 * win_W))
+## frame y
 (trb_Y_x, trb_Y_y, trb_Y_w) = (int(0.275 * win_W), int(0.586 * win_H), int(0.195 * win_W))
+## frame width
 (trb_W_x, trb_W_y, trb_W_w) = (int(0.472 * win_W), int(0.586 * win_H), int(0.195 * win_W))
+## frame height
 (trb_H_x, trb_H_y, trb_H_w) = (int(0.669 * win_W), int(0.586 * win_H), int(0.195 * win_W))
 
 # recognition region
