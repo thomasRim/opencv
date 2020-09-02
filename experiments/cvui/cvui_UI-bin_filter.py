@@ -9,7 +9,7 @@ WINDOW_NAME = "Image button"
 (win_W, win_H) = (1024, 768)
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
-path = os.path.join(sysPath, "output.avi")
+path = os.path.join(sysPath, "output_21-19-51.avi")
 
 cap = cv2.VideoCapture()
 
@@ -36,7 +36,7 @@ recog_state = [recog_states.get(0, "None")]
 
 # contour debug state
 contour_states = {0: "normal", 1: "thresholded"}
-contour_state = contour_states.get(0, "")
+contour_state = [contour_states.get(0, "")]
 
 blink = 10
 isBlink = [True]
@@ -45,7 +45,7 @@ recognize = [False]
 # 0 - Simple contrast control [1.0-3.0]; 1 - Simple brightness control [0-100]; 2 - gamma
 img_alpha = [1.35]
 img_beta = [5]
-img_gamma = [1.5]
+img_gamma = [1]
 # threshold space min/max 0-255
 threshold_min = [140]
 threshold_max = [255]
@@ -144,6 +144,13 @@ cap_fr2_x, cap_fr2_y, cap_fr2_w, cap_fr2_h = (
     int(0.03 * win_H),
 )
 
+#resognizer contour normal/binary toggle button
+(cnt_state_btn_x, cnt_state_btn_y, cnt_state_btn_w, cnt_state_btn_h) = (
+    int(0.88 * win_W),
+    int(0.586 * win_H),
+    int(0.1 * win_W),
+    int(0.03 * win_H),
+)
 # recognizers trackbars
 ## threshold min
 (trecog_thr_min_x, trecog_thr_min_y, trecog_thr_min_w) = (
@@ -222,7 +229,6 @@ def scaleImageToMax(image, max_w, max_h):
     else:
         return cv2.resize(image, (int(k_w * w), int(k_w * h)))
 
-
 def gammaCorrection(image, gamma):
     lookUpTable = np.empty((1, 256), np.uint8)
     for i in range(256):
@@ -277,7 +283,7 @@ def detectObjectsFrom(img, frame):
 
 
 # Contours
-def detectContoursFrom(img, frame, alpha, beta, gamma, area_min, area_max):
+def correctedImage(img, alpha, beta, gamma):
     corrected_img = gammaCorrection(img, gamma)
     converted_img = cv2.convertScaleAbs(corrected_img, alpha=alpha, beta=beta)
 
@@ -287,8 +293,10 @@ def detectContoursFrom(img, frame, alpha, beta, gamma, area_min, area_max):
     )
     threshold_img = cv2.medianBlur(threshold_img, 5)
     threshold_img = cv2.medianBlur(threshold_img, 5)
+    return threshold_img
 
-    # img = threshold_img
+def detectContoursFrom(img, frame, alpha, beta, gamma, area_min, area_max):
+    threshold_img = correctedImage(img, alpha, beta, gamma)
 
     # Detect
     contours, _ = cv2.findContours(
@@ -372,12 +380,17 @@ def startRecognize():
     recog_btn_state[0] = recog_btn_states.get(1, "None")
     recognize[0] = True
 
-
 def stopRecognize():
     state[0] = states.get(1, "None")
     recog_btn_state[0] = recog_btn_states.get(0, "None")
     recognize[0] = False
 
+def contourStateToggle():
+    if contour_state[0] == contour_states.get(0,""):
+        contour_state[0] = contour_states.get(1,"")
+    else:
+        contour_state[0] = contour_states.get(0,"")
+    setup()
 
 #### TODO
 def stopAll():
@@ -539,8 +552,8 @@ def main():
                     int(tr_vY[0]) : (int(tr_vH[0]) + int(tr_vY[0])),
                     int(tr_vX[0]) : (int(tr_vW[0]) + int(tr_vX[0])),
                 ]
-                crop_image = scaleImageToMax(crop_image, max_width, max_height)
-                cr_sh_h, cr_sh_w, _ = crop_image.shape
+                crop__scaled_image = scaleImageToMax(crop_image, max_width, max_height)
+                cr_sh_h, cr_sh_w, _ = crop__scaled_image.shape
                 cr_sh_xx = cap_fr2_x + int((max_width - cr_sh_w) / 2)
                 cr_sh_yy = cap_fr2_y + int((max_height - cr_sh_h) / 2)
 
@@ -575,7 +588,7 @@ def main():
                 if recognize[0] == True:
                     if recog_state[0] == recog_states.get(0, ""):
                         detectContoursFrom(
-                            crop_image,
+                            crop__scaled_image,
                             frame,
                             img_alpha[0],
                             img_beta[0],
@@ -586,10 +599,16 @@ def main():
                         contourTrackBars(frame)
 
                     else:
-                        detectObjectsFrom(crop_image, frame)
+                        detectObjectsFrom(crop__scaled_image, frame)
 
                 # draw result
-                cvui.image(frame, cr_sh_xx, cr_sh_yy, crop_image)
+                if contour_state[0] == contour_states.get(0,""):
+                    cvui.image(frame, cr_sh_xx, cr_sh_yy, crop__scaled_image)
+                else:
+                    colored_grey = cv2.cvtColor(correctedImage(crop__scaled_image, img_alpha[0],
+                                img_beta[0],
+                                img_gamma[0]), cv2.COLOR_GRAY2BGR)
+                    cvui.image(frame, cr_sh_xx, cr_sh_yy, colored_grey)
 
             else:
                 cap.release()
@@ -628,10 +647,16 @@ def main():
         # recognizers setup region
         cvui.rect(frame, recog_set_x, recog_set_y, recog_set_w, recog_set_h, 0x008EDF)
 
+        # contour toggle
+        if recognize[0] == True:
+            if recog_state[0] == recog_states.get(0,""):
+                if cvui.button(frame, cnt_state_btn_x, cnt_state_btn_y, cnt_state_btn_w, cnt_state_btn_h, contour_state[0]):
+                    contourStateToggle()
+
         # recognition result region
         cvui.rect(frame, recog_res_x, recog_res_y, recog_res_w, recog_res_h, 0xFFFF00)
 
-        # ipdate all ui
+        # update all ui
         cvui.update()
 
         # Show everything on the screen
