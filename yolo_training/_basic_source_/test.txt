@@ -1,0 +1,1 @@
+# here should be file name paths for testing. Start like "/content/gdrive/MyDrive/darknet/images/...jpg"

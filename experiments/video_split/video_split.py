@@ -1,13 +1,32 @@
 import cv2 as cv
 import os, sys
 
-videoName = "springs_11"
-videoExt = ".mov"
+import argparse
+
+# Defaults
 scale = 0.5
+
+
+# Initiate the parser
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input", help="video source to split. Should be placed near, in \"sources\" folder.")
+parser.add_argument("-s", "--scale", help="output images scale. Default = 0.5")
+
+# Read arguments from the command line
+args = parser.parse_args()
+if args.input:
+    sourceFile = args.input
+else:
+    parser.error("No video source file specified.")
+    sys.exit(0)
+if args.scale:
+    scale = args.scale
+
+(videoName, videoExt) = sourceFile.rsplit(".")
 
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
-source = os.path.join(os.path.join(sysPath, "sources"), videoName + videoExt)
+source = os.path.join(os.path.join(sysPath, "sources"), ".".join([videoName,videoExt]))
 if not os.path.isfile(source):
     print("Input file ", source, " doesn't exist")
     sys.exit(1)

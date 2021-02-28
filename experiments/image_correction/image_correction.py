@@ -13,22 +13,28 @@ gamma_max = 200
 
 
 def basicLinearTransform():
-    res = cv.convertScaleAbs(img_original, alpha=alpha, beta=beta)
-    img_corrected = cv.hconcat([img_original, res])
-    cv.imshow("Brightness and contrast adjustments", img_corrected)
-
-
-def gammaCorrection():
-    ## [changing-contrast-brightness-gamma-correction]
     lookUpTable = np.empty((1, 256), np.uint8)
     for i in range(256):
         lookUpTable[0, i] = np.clip(pow(i / 255.0, gamma) * 255.0, 0, 255)
 
-    res = cv.LUT(img_original, lookUpTable)
-    ## [changing-contrast-brightness-gamma-correction]
 
-    img_gamma_corrected = cv.hconcat([img_original, res])
-    cv.imshow("Gamma correction", img_gamma_corrected)
+    res = cv.convertScaleAbs(img_original, alpha=alpha, beta=beta)
+    res = cv.LUT(res, lookUpTable)
+    img_corrected = cv.hconcat([img_original, res])
+    cv.imshow("Brightness and contrast adjustments", img_corrected)
+
+
+# def gammaCorrection():
+#     ## [changing-contrast-brightness-gamma-correction]
+#     lookUpTable = np.empty((1, 256), np.uint8)
+#     for i in range(256):
+#         lookUpTable[0, i] = np.clip(pow(i / 255.0, gamma) * 255.0, 0, 255)
+
+#     res = cv.LUT(img_original, lookUpTable)
+#     ## [changing-contrast-brightness-gamma-correction]
+
+#     img_gamma_corrected = cv.hconcat([img_original, res])
+#     cv.imshow("Gamma correction", img_gamma_corrected)
 
 
 def on_linear_transform_alpha_trackbar(val):
@@ -46,14 +52,15 @@ def on_linear_transform_beta_trackbar(val):
 def on_gamma_correction_trackbar(val):
     global gamma
     gamma = val / 100
-    gammaCorrection()
+    basicLinearTransform()
 
 
 #
 #
 #
+filename = "saved_pypylon_img.png" #"pypylon_img.png" #"0001.jpg"
 sysPath = os.path.dirname(os.path.abspath(__file__))
-source_path = os.path.join(sysPath, "0001.jpg")
+source_path = os.path.join(sysPath, filename)
 
 img_original = cv.imread(source_path)
 
@@ -70,7 +77,7 @@ img_corrected = cv.hconcat([img_original, img_original])
 img_gamma_corrected = cv.hconcat([img_original, img_original])
 
 cv.namedWindow("Brightness and contrast adjustments")
-cv.namedWindow("Gamma correction")
+# cv.namedWindow("Gamma correction")
 
 alpha_init = int(alpha * 100)
 cv.createTrackbar(
@@ -91,7 +98,7 @@ cv.createTrackbar(
 gamma_init = int(gamma * 100)
 cv.createTrackbar(
     "Gamma correction",
-    "Gamma correction",
+     "Brightness and contrast adjustments",
     gamma_init,
     gamma_max,
     on_gamma_correction_trackbar,

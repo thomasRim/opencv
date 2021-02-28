@@ -5,15 +5,15 @@ import os
 import time
 from yolo import Yolo
 
-## constants that can be changed from params
+## constants that should be changed from params (future)
 
 lib_folder = "lib"
-yolo_weight = "yolov3-custom.weights"
-yolo_config = "yolov3-custom.cfg"
+yolo_weight = "yolov4.weights"
+yolo_config = "yolov4.cfg"
 yolo_names = "custom.names"
 
-source_folder = ""
-source_file_name = "springs_04.MOV"
+source_folder = "sources"
+source_file_name = "Skype_Video2.mp4"
 
 ## Window
 
@@ -22,7 +22,7 @@ WINDOW_NAME = "Object recongnition. Binary contour and YOLO object detection."
 
 sysPath = os.path.dirname(os.path.abspath(__file__))
 
-videoPath = os.path.join(sysPath, source_file_name)
+videoPath = os.path.join(sysPath, os.path.join(source_folder,source_file_name))
 
 cap = cv2.VideoCapture()
 
