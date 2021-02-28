@@ -1,0 +1,15 @@
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0007.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0072.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0133.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0108.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0057.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0050.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0117.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0130.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0049.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0066.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0077.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0098.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0112.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0030.jpg
+/content/gdrive/MyDrive/darknet/yolov4_training/images/0062.jpg
