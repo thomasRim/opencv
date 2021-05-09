@@ -1,4 +1,0 @@
-hex nut
-hex bolt
-flat washer
-spring

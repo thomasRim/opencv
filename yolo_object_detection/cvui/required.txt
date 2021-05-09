@@ -1,4 +1,0 @@
-cvui
-numpy
-opencv-python
-
